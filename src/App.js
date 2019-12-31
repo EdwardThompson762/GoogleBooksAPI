@@ -10,7 +10,7 @@ class App extends React.Component {
     super(props)
     this.state = {
       listOfBooks : [],
-      baseUrl: "https://www.googleapis.com/books/q={}={$APIkey}"
+      
     }
   }
 
@@ -27,21 +27,25 @@ class App extends React.Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    event.target.books.value;
-      //bookFilter: event.target.value
-      //this.props.onChange(event.target.value)
-    /*const bookType = event.target;//booktype.value
-    const url = `https://www.googleapis.com/books/v1/volumes?q=flowers&filter={select}&key=AIzaSyCOz5M6GtdVE0r-z1yQYkhvlZz-oRhnEq8`;
+    let filter = event.target.books.value;
+
+    let searchTerm = event.target.searchTerm.value;
+    
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${searchTerm}&filter=${filter}&key=AIzaSyCOz5M6GtdVE0r-z1yQYkhvlZz-oRhnEq8`;
+    
     fetch( url )
       .then ( response => {
         if( response.ok) {
           return response.json();
         }
-
         throw new Error("Something Wrong");
         })
         .then( responseJSON => {
           console.log( responseJSON );
+          this.setState({listOfBooks:responseJSON.items})
+          
+
+
           
         })
         .catch( error => {
@@ -49,29 +53,47 @@ class App extends React.Component {
           this.setState({
             listOfBooks: []
           });
-        });*/
+        });
   };
 
-   displayResults = () => {
+   displayResults = (responseJson) => {
      console.log( "Length", this.state.listOfBooks.length )
      if( this.state.listOfBooks.length === 0){
        return (<li> No book found, try something else</li>);
        }
        else{
          return this.state.listOfBooks.map( (book, index ) => {
+           let author = ""
+           if (book.volumeInfo.authors){
+             author=book.volumeInfo.authors[0]
+           }
+           let price = ""
+           if(book.saleInfo.retailPrice){
+            price=book.saleInfo.retailPrice.amount
+          }
+          let image = ""
+          if(book.volumeInfo.imageLinks){
+            image=book.volumeInfo.imageLinks.smallThumbnail
+          }
+
            return (<li key={index}>
+                  <p>{book.volumeInfo.title}</p>
+                  <p>{author}</p>
+                  <p>{price}</p>
+                  <img src={image} className="images"></img>
+                  <p>{book.searchInfo.textSnippet}</p>
                    </li> )
          })
        }
      };
    
-
+//add name = searchTerm
   render(){
     return (
       <main className="App">
         <form onSubmit={this.handleSubmit}>
           <label htmlFor="filter">Filter for type of book</label>
-          <input type="text" id="filter"
+          <input type="text" id="filter" name="searchTerm"
            />
            <select name="books">
              <option value="partial">partial</option>
